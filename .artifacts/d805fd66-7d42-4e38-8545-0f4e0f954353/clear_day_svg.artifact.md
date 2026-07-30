@@ -1,0 +1,30 @@
+# Clear Day SVG
+
+I have created the SVG file for the "Clear Day" weather condition.
+
+## File Location
+- [clear_day.svg](file:///C:/Users/jenil/OneDrive/Desktop/Weather/app/src/main/res/drawable/clear_day.svg)
+
+## SVG Source
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 128 128">
+  <g id="clear-day__clear-day">
+    <g id="clear-day__Sun">
+      <circle id="clear-day__Core" cx="64" cy="64" r="19.5" fill="url(#clear-day__paint0_linear_1802_5186)" stroke="#f8af18"/>
+      <g id="clear-day__Rays">
+        <path fill="#f8af18" d="M61 19a3 3 0 1 1 6 0v14a3 3 0 0 1-6 0zM93.699 30.059A3 3 0 1 1 97.94 34.3l-9.9 9.9a3 3 0 1 1-4.242-4.243zM109 61a3 3 0 1 1 0 6H95a3 3 0 1 1 0-6zM97.941 93.699a3 3 0 1 1-4.243 4.242l-9.899-9.9a3 3 0 1 1 4.243-4.242zM61 95a3 3 0 1 1 6 0v14a3 3 0 1 1-6 0zM39.958 83.799a3 3 0 1 1 4.243 4.243l-9.9 9.9a3 3 0 1 1-4.242-4.243zM33 61a3 3 0 1 1 0 6H19a3 3 0 0 1 0-6zM44.201 39.958a3 3 0 1 1-4.243 4.243l-9.9-9.9a3 3 0 1 1 4.243-4.242z"/>
+        <animateTransform attributeName="transform" begin="0s" dur="6s" repeatCount="indefinite" type="rotate" values="0 64.0 64.0;360 64.0 64.0"/>
+      </g>
+    </g>
+  </g>
+  <defs>
+    <linearGradient id="clear-day__paint0_linear_1802_5186" x1="64" x2="64" y1="44" y2="84" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fbbf24"/>
+      <stop offset="1" stop-color="#f8af18"/>
+    </linearGradient>
+  </defs>
+</svg>
+```
+
+> [!NOTE]
+> I added `offset="0"` to the first `<stop>` element to ensure compatibility with all SVG parsers.

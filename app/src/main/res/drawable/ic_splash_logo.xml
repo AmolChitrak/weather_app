@@ -1,0 +1,38 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="260"
+    android:viewportHeight="260">
+
+    <!-- Sun core -->
+    <path
+        android:fillColor="#FFC94A"
+        android:pathData="M150,60 m-36,0 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0" />
+
+    <!-- Sun rays (8 rays) -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M150,14 L150,0 M182,28 L195,15 M196,60 L214,60 M182,92 L195,105 M150,106 L150,124 M118,92 L105,105 M104,60 L86,60 M118,28 L105,15"
+        android:strokeColor="#FFC94A"
+        android:strokeWidth="10"
+        android:strokeLineCap="round" />
+
+    <!-- Cloud (fluffy and rounded) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M70,165 a30,30 0 0,1 55,-15 a40,40 0 0,1 75,10 a35,35 0 0,1 -5,65 h-110 a30,30 0 0,1 -15,-60 z" />
+
+    <!-- Rain drops (Teardrop shapes) -->
+    <!-- Drop 1 -->
+    <path
+        android:fillColor="#BFE0FF"
+        android:pathData="M100,210 c0,0 -6,10 -6,16 a6,6 0 1,0 12,0 c0,-6 -6,-16 -6,-16 z" />
+    <!-- Drop 2 -->
+    <path
+        android:fillColor="#BFE0FF"
+        android:pathData="M140,220 c0,0 -6,10 -6,16 a6,6 0 1,0 12,0 c0,-6 -6,-16 -6,-16 z" />
+    <!-- Drop 3 -->
+    <path
+        android:fillColor="#BFE0FF"
+        android:pathData="M180,210 c0,0 -6,10 -6,16 a6,6 0 1,0 12,0 c0,-6 -6,-16 -6,-16 z" />
+</vector>

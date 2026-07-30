@@ -1,0 +1,5 @@
+- [x] Update `SearchScreen.kt`
+    - [x] Update `navigateWithResult` to track recent searches
+    - [x] Implement the "initial" state UI with Current Location, Recent Searches, and Favorites
+    - [x] Connect `CurrentLocationCard` to `viewModel.fetchCurrentLocation`
+- [x] Verify functionality
