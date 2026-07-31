@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.content.ContentResolver
 import android.content.Context
 import android.media.AudioAttributes
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -16,12 +15,17 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.getValue
+import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.jenil.weather.domain.model.WeatherCondition
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.jenil.weather.ui.location.ManageLocationsScreen
 import com.jenil.weather.ui.onboarding.OnboardingScreen
 import com.jenil.weather.ui.search.SearchScreen
@@ -31,16 +35,10 @@ import com.jenil.weather.ui.splash.SplashScreen
 import com.jenil.weather.ui.theme.WeatherTheme
 import com.jenil.weather.ui.weather.MainDashboardScreen
 import com.jenil.weather.ui.weather.WeatherViewModel
-import dagger.hilt.android.AndroidEntryPoint
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import com.jenil.weather.utils.WeatherNotificationManager
 import com.jenil.weather.worker.WeatherWorker
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.concurrent.TimeUnit
-import androidx.core.net.toUri
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -134,7 +132,6 @@ class MainActivity : ComponentActivity() {
             val weatherViewModel: WeatherViewModel = hiltViewModel()
             val settingsViewModel: SettingsViewModel = hiltViewModel()
 
-            val uiState by weatherViewModel.uiState.collectAsStateWithLifecycle()
             val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
 
             val isOnboardingComplete by weatherViewModel.isOnboardingComplete.collectAsStateWithLifecycle(initialValue = false)
