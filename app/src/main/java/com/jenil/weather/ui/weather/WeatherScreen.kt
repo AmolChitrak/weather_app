@@ -2,17 +2,12 @@ package com.jenil.weather.ui.weather
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,11 +33,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -59,7 +53,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -67,10 +60,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.jenil.weather.ui.core.CurrentWeatherHeader
 import com.jenil.weather.ui.core.DailyForecastSection
+import com.jenil.weather.ui.core.HomeTopBar
 import com.jenil.weather.ui.core.HourlyForecastSection
 import com.jenil.weather.ui.core.RefreshIndicator
 import com.jenil.weather.ui.core.WeatherExtraDetailsGrid
 import com.jenil.weather.ui.core.WeatherMetricsGrid
+import com.jenil.weather.ui.theme.WeatherTheme
+import com.jenil.weather.ui.theme.glassBackdrop
+import com.jenil.weather.ui.theme.glassCard
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import kotlin.math.roundToInt
 
 private enum class ScreenState { Loading, Error, Content }
@@ -81,9 +80,12 @@ fun WeatherScreen(
     viewModel: WeatherViewModel,
     modifier: Modifier = Modifier
 ) {
-
     val navBackStackEntry = navController.currentBackStackEntry
     val savedStateHandle = navBackStackEntry?.savedStateHandle
+
+    val hazeState = rememberHazeState()
+    val stickyShape = RoundedCornerShape(24.dp)
+    val isDark = WeatherTheme.colors.isDark
 
     val isCelsius by viewModel.isCelsius.collectAsStateWithLifecycle()
     val isKmh by viewModel.isKmh.collectAsStateWithLifecycle()
@@ -115,15 +117,37 @@ fun WeatherScreen(
         uiState.error != null && data == null -> ScreenState.Error
         else -> ScreenState.Content
     }
+
     val scrollState = rememberScrollState()
-    val showStickyHeader = scrollState.value > 800
+    // Adjusted trigger point slightly for smoother sticky header appearance
+    val showStickyHeader = scrollState.value > 580
 
     val pullState = rememberPullToRefreshState()
+
+    // Mode-aware gradient background to preserve true dark background depth
+    val atmosphericGradient = if (isDark) {
+        Brush.verticalGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                MaterialTheme.colorScheme.surface.copy(alpha = 0.05f),
+                MaterialTheme.colorScheme.background
+            )
+        )
+    } else {
+        Brush.verticalGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                MaterialTheme.colorScheme.background
+            )
+        )
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.35f))
+            .glassBackdrop(hazeState) // Required for Haze glassmorphism
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -142,7 +166,10 @@ fun WeatherScreen(
                                 .padding(innerPadding),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 3.dp
+                            )
                         }
                     }
 
@@ -151,19 +178,24 @@ fun WeatherScreen(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(innerPadding)
-                                .padding(16.dp),
+                                .padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
                                 text = uiState.error ?: "Something went wrong",
+                                style = WeatherTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.error
                             )
-                            Spacer(Modifier.height(12.dp))
+                            Spacer(Modifier.height(16.dp))
                             TextButton(
                                 onClick = { viewModel.refreshWeatherData() }
                             ) {
-                                Text("Retry")
+                                Text(
+                                    "Retry",
+                                    style = WeatherTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
                             }
                         }
                     }
@@ -183,25 +215,26 @@ fun WeatherScreen(
                                             .align(Alignment.TopCenter)
                                             .windowInsetsPadding(
                                                 WindowInsets.statusBars.union(
-                                                    WindowInsets.displayCutout.only(
-                                                        WindowInsetsSides.Top
-                                                    )
+                                                    WindowInsets.displayCutout.only(WindowInsetsSides.Top)
                                                 )
                                             )
                                             .padding(top = 12.dp)
                                     )
                                 },
                                 modifier = Modifier.fillMaxSize()
-
                             ) {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .padding(innerPadding)
+                                        .hazeSource(state = hazeState)
                                         .verticalScroll(scrollState)
                                 ) {
+                                    Spacer(
+                                        modifier = Modifier.height(
+                                            WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 8.dp
+                                        )
+                                    )
 
-                                    // --- OFFLINE BANNER ---
                                     AnimatedVisibility(
                                         visible = uiState.isOffline,
                                         enter = slideInVertically() + fadeIn(),
@@ -210,9 +243,9 @@ fun WeatherScreen(
                                         Box(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .background(MaterialTheme.colorScheme.errorContainer)
+                                                .padding(horizontal = 20.dp, vertical = 8.dp)
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.9f))
                                                 .padding(12.dp)
                                         ) {
                                             Row(
@@ -228,42 +261,63 @@ fun WeatherScreen(
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Text(
-                                                    text = "Offline Mode — Showing cached forecast for ${current.cityName}",
-                                                    style = MaterialTheme.typography.labelMedium,
+                                                    text = "Offline Mode — Cached forecast for ${current.cityName}",
+                                                    style = WeatherTheme.typography.labelSmall,
                                                     color = MaterialTheme.colorScheme.onErrorContainer
                                                 )
                                             }
                                         }
                                     }
-                                    // --- END OFFLINE BANNER ---
+                                    HomeTopBar(
+                                        cityName = current.cityName,
+                                        modifier = Modifier.padding(horizontal = 20.dp)
+                                    )
+
+                                    Spacer(modifier = Modifier.height(20.dp))
 
                                     CurrentWeatherHeader(
                                         weatherData = current,
-                                        onSettingsClick = { navController.navigate("settings_route") },
                                         isCelsius = isCelsius,
+                                        hazeState = hazeState
                                     )
+
+                                    Spacer(modifier = Modifier.height(20.dp))
+
                                     WeatherMetricsGrid(
                                         weatherData = current,
-                                        isKmh = isKmh
+                                        isKmh = isKmh,
+                                        hazeState = hazeState,
+                                        isPrecipitationMm = isPrecipitationMm
                                     )
-                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    Spacer(modifier = Modifier.height(20.dp))
+
                                     HourlyForecastSection(
                                         hourlyData = current.hourlyForecast,
                                         isCelsius = isCelsius,
+                                        hazeState = hazeState
                                     )
+
+                                    Spacer(modifier = Modifier.height(20.dp))
+
                                     DailyForecastSection(
-                                        dailyData = current.dailyForecast,
-                                        isCelsius = isCelsius
+                                        forecasts = current.dailyForecast,
+                                        isCelsius = isCelsius,
+                                        hazeState = hazeState
                                     )
-                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    Spacer(modifier = Modifier.height(20.dp))
+
                                     WeatherExtraDetailsGrid(
                                         weatherData = current,
                                         isCelsius = isCelsius,
                                         isKmh = isKmh,
-                                        isPrecipitationMm = isPrecipitationMm,
-                                        pressureUnit = pressureUnit
+                                        pressureUnit = pressureUnit,
+                                        hazeState = hazeState
                                     )
-                                    Spacer(modifier = Modifier.height(120.dp))
+
+                                    // Extra bottom padding so the last item clears navigation bars
+                                    Spacer(modifier = Modifier.height(140.dp))
                                 }
                             }
                         }
@@ -274,84 +328,88 @@ fun WeatherScreen(
 
         AnimatedVisibility(
             visible = showStickyHeader && screenState == ScreenState.Content && data != null,
-            enter = fadeIn(tween(250)) + slideInVertically(initialOffsetY = { -it / 2 }),
-            exit = fadeOut(tween(180)) + slideOutVertically(targetOffsetY = { -it / 2 }),
+            enter = fadeIn(tween(220)) + slideInVertically(initialOffsetY = { -it }),
+            exit = fadeOut(tween(180)) + slideOutVertically(targetOffsetY = { -it }),
             modifier = Modifier.align(Alignment.TopCenter)
         ) {
             data?.let { current ->
-
                 val displayTemp =
                     if (isCelsius) current.temperature
                     else (current.temperature * 9f / 5f + 32f).roundToInt()
                 val unit = if (isCelsius) "°C" else "°F"
 
-                val settingsInteractionSource = remember { MutableInteractionSource() }
-                val isSettingsPressed by settingsInteractionSource.collectIsPressedAsState()
-                val settingsScale by animateFloatAsState(
-                    targetValue = if (isSettingsPressed) 0.88f else 1f,
-                    animationSpec = tween(150, easing = FastOutSlowInEasing),
-                    label = "sticky_settings_scale"
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .windowInsetsPadding(
-                            WindowInsets.statusBars.union(
-                                WindowInsets.displayCutout.only(WindowInsetsSides.Top)
-                            )
-                        )
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
-                        .shadow(elevation = 8.dp, shape = RoundedCornerShape(28.dp), clip = false)
-                        .clip(RoundedCornerShape(28.dp))
-                        .background(
-                            brush = Brush.linearGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
-                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
-                                )
-                            )
-                        )
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
-                            shape = RoundedCornerShape(28.dp)
-                        )
+                Column(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 18.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        Row(
-                            modifier = Modifier.weight(1f),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.LocationOn,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.primary
+                            .windowInsetsPadding(
+                                WindowInsets.statusBars.union(
+                                    WindowInsets.displayCutout.only(WindowInsetsSides.Top)
+                                )
                             )
-                            Spacer(Modifier.width(6.dp))
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 8.dp)
+                            .then(
+                                if (!isDark) {
+                                    Modifier.shadow(
+                                        elevation = 8.dp,
+                                        shape = stickyShape,
+                                        ambientColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                        spotColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                                    )
+                                } else Modifier
+                            )
+                            .glassCard(hazeState, shape = stickyShape)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.LocationOn,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                                Spacer(Modifier.width(10.dp))
+                                Text(
+                                    text = current.cityName,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = WeatherTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = WeatherTheme.colors.onSurface
+                                )
+                            }
+
                             Text(
-                                text = current.cityName,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onBackground
+                                text = "$displayTemp$unit",
+                                style = WeatherTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = WeatherTheme.colors.onSurface
                             )
                         }
-
-                        Text(
-                            text = "$displayTemp$unit",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
                     }
                 }
             }

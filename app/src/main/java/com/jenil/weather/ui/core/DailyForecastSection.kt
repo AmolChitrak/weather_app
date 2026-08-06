@@ -1,88 +1,91 @@
 package com.jenil.weather.ui.core
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.jenil.weather.domain.model.DailyForecast
+import com.jenil.weather.ui.theme.WeatherTheme
+import com.jenil.weather.ui.theme.glassCard
+import dev.chrisbanes.haze.HazeState
 import kotlin.math.roundToInt
 
 @Composable
 fun DailyForecastSection(
-    dailyData: List<DailyForecast>,
+    forecasts: List<DailyForecast>,
     isCelsius: Boolean,
+    hazeState: HazeState,
     modifier: Modifier = Modifier
 ) {
-    if (dailyData.isEmpty()) return
+    if (forecasts.isEmpty()) return
 
-    fun convert(temp: Int): Int =
-        if (isCelsius) temp else (temp * 9f / 5f + 32f).roundToInt()
-
-    val overallMin = dailyData.minOf { convert(it.lowTemp) }
-    val overallMax = dailyData.maxOf { convert(it.highTemp) }
+    val globalMinTemp = forecasts.minOf { it.lowTemp.toFloat() }
+    val globalMaxTemp = forecasts.maxOf { it.highTemp.toFloat() }
+    val cardShape = RoundedCornerShape(24.dp)
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
-
+            .padding(horizontal = 20.dp)
     ) {
         Text(
-            text = "7-day forecast",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
-            modifier = Modifier.padding(bottom = 10.dp)
+            text = "7-DAY FORECAST",
+            style = WeatherTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.5.sp,
+            color = WeatherTheme.colors.onSurfaceMuted,
+            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
         )
 
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp))
+                .glassCard(
+                    hazeState = hazeState,
+                    shape = cardShape
+                )
                 .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.1f)
-                        )
-                    )
+                    color = WeatherTheme.colors.surfaceCard,
+                    shape = cardShape
                 )
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
-                    shape = RoundedCornerShape(24.dp)
-                )
+                .padding(20.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                dailyData.forEachIndexed { index, forecast ->
-                    DailyForecastItem(
-                        forecast = forecast,
-                        isCelsius = isCelsius,
-                        isToday = index == 0,
-                        overallMin = overallMin,
-                        overallMax = overallMax
-                    )
+            forecasts.forEachIndexed { index, forecast ->
+                DailyForecastRow(
+                    forecast = forecast,
+                    isCelsius = isCelsius,
+                    globalMin = globalMinTemp,
+                    globalMax = globalMaxTemp
+                )
 
-                    if (index < dailyData.lastIndex) {
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f),
-                            modifier = Modifier.padding(vertical = 6.dp)
-                        )
-                    }
+                if (index < forecasts.lastIndex) {
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
@@ -90,85 +93,135 @@ fun DailyForecastSection(
 }
 
 @Composable
-fun DailyForecastItem(
+private fun DailyForecastRow(
     forecast: DailyForecast,
     isCelsius: Boolean,
-    isToday: Boolean = false,
-    overallMin: Int? = null,
-    overallMax: Int? = null
+    globalMin: Float,
+    globalMax: Float
 ) {
-    val displayLow = if (isCelsius) forecast.lowTemp else (forecast.lowTemp * 9f / 5f + 32f).roundToInt()
-    val displayHigh = if (isCelsius) forecast.highTemp else (forecast.highTemp * 9f / 5f + 32f).roundToInt()
+    val lowFloat = forecast.lowTemp.toFloat()
+    val highFloat = forecast.highTemp.toFloat()
 
-    val minBound = overallMin ?: displayLow
-    val maxBound = overallMax ?: displayHigh
-    val totalRange = (maxBound - minBound).coerceAtLeast(1)
+    val targetHigh = if (isCelsius) highFloat else (highFloat * 9f / 5f + 32f)
+    val targetLow = if (isCelsius) lowFloat else (lowFloat * 9f / 5f + 32f)
+    val unitSuffix = "°"
 
-    val beforeFraction = ((displayLow - minBound).toFloat() / totalRange).coerceIn(0f, 1f)
-    val rangeFraction = ((displayHigh - displayLow).toFloat() / totalRange).coerceIn(0.05f, 1f)
-    val afterFraction = (1f - beforeFraction - rangeFraction).coerceAtLeast(0f)
+    val animatedHighTemp by animateIntAsState(
+        targetValue = targetHigh.roundToInt(),
+        animationSpec = tween(600, easing = FastOutSlowInEasing),
+        label = "daily_high_anim"
+    )
+    val animatedLowTemp by animateIntAsState(
+        targetValue = targetLow.roundToInt(),
+        animationSpec = tween(600, easing = FastOutSlowInEasing),
+        label = "daily_low_anim"
+    )
+
+    val range = (globalMax - globalMin).coerceAtLeast(1f)
+    val startFraction = ((lowFloat - globalMin) / range).coerceIn(0f, 1f)
+    val endFraction = ((highFloat - globalMin) / range).coerceIn(0f, 1f)
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = if (isToday) "Today" else forecast.day,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = if (isToday) FontWeight.SemiBold else FontWeight.Normal,
-            color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.weight(1f)
+            text = forecast.day,
+            style = WeatherTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = WeatherTheme.colors.onSurface,
+            modifier = Modifier.width(54.dp)
         )
 
-        Box(
-            modifier = Modifier.width(32.dp),
-            contentAlignment = Alignment.Center
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.width(44.dp)
         ) {
-
             WeatherConditionIcon(
                 condition = forecast.condition,
-                modifier = Modifier.size(24.dp),
-                sourceTag = "DailyItem-${forecast.day}",
+                modifier = Modifier.size(28.dp),
+                sourceTag = "DailyForecastRow",
                 showBackgroundBadge = true
             )
         }
 
-        Text(
-            text = "${displayLow}°",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
-            modifier = Modifier.width(32.dp)
-        )
-
-        // Low–high range bar, scaled against the week's overall min/max
-        Row(
-            modifier = Modifier
-                .weight(1.4f)
-                .height(4.dp)
-                .padding(horizontal = 6.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f))
-        ) {
-            if (beforeFraction > 0f) Spacer(modifier = Modifier.weight(beforeFraction))
-            Box(
-                modifier = Modifier
-                    .weight(rangeFraction)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(MaterialTheme.colorScheme.primary)
+        AnimatedContent(
+            targetState = animatedLowTemp,
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            label = "low_temp_text",
+            modifier = Modifier.width(36.dp)
+        ) { low ->
+            Text(
+                text = "$low$unitSuffix",
+                style = WeatherTheme.typography.bodyMedium,
+                color = WeatherTheme.colors.onSurfaceMuted,
+                fontWeight = FontWeight.Medium
             )
-            if (afterFraction > 0f) Spacer(modifier = Modifier.weight(afterFraction))
         }
 
-        Text(
-            text = "${displayHigh}°",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.width(36.dp),
-            textAlign = TextAlign.End
+        TemperatureRangeBar(
+            startFraction = startFraction,
+            endFraction = endFraction,
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 12.dp)
+                .height(6.dp)
+        )
+
+        AnimatedContent(
+            targetState = animatedHighTemp,
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            label = "high_temp_text",
+            modifier = Modifier.width(36.dp)
+        ) { high ->
+            Text(
+                text = "$high$unitSuffix",
+                style = WeatherTheme.typography.bodyMedium,
+                color = WeatherTheme.colors.onSurface,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun TemperatureRangeBar(
+    startFraction: Float,
+    endFraction: Float,
+    modifier: Modifier = Modifier
+) {
+    val trackColor = WeatherTheme.colors.surfaceElevated
+    val activeBrush = Brush.horizontalGradient(
+        colors = listOf(
+            WeatherTheme.colors.accentSky,
+            WeatherTheme.colors.accentSun,
+            WeatherTheme.colors.badgeRed
+        )
+    )
+
+    Canvas(modifier = modifier) {
+        val width = size.width
+        val height = size.height
+        val strokeWidth = height
+
+        drawLine(
+            color = trackColor,
+            start = Offset(x = 0f, y = height / 2f),
+            end = Offset(x = width, y = height / 2f),
+            strokeWidth = strokeWidth,
+            cap = StrokeCap.Round
+        )
+
+        val startX = (width * startFraction).coerceIn(0f, width)
+        val endX = (width * endFraction).coerceIn(startX + strokeWidth, width)
+
+        drawLine(
+            brush = activeBrush,
+            start = Offset(x = startX, y = height / 2f),
+            end = Offset(x = endX, y = height / 2f),
+            strokeWidth = strokeWidth,
+            cap = StrokeCap.Round
         )
     }
 }

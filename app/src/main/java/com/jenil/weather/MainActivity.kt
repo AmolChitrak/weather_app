@@ -15,6 +15,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -29,15 +30,15 @@ import androidx.work.WorkManager
 import com.jenil.weather.ui.location.ManageLocationsScreen
 import com.jenil.weather.ui.onboarding.OnboardingScreen
 import com.jenil.weather.ui.search.SearchScreen
-import com.jenil.weather.ui.settings.SettingsScreen
 import com.jenil.weather.ui.settings.SettingsViewModel
 import com.jenil.weather.ui.splash.SplashScreen
-import com.jenil.weather.ui.theme.WeatherTheme
 import com.jenil.weather.ui.weather.MainDashboardScreen
 import com.jenil.weather.ui.weather.WeatherViewModel
 import com.jenil.weather.utils.WeatherNotificationManager
-import com.jenil.weather.worker.WeatherWorker
+import com.jenil.weather.data.worker.WeatherWorker
+import com.jenil.weather.ui.theme.WeatherAppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import dev.chrisbanes.haze.HazeState
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -55,7 +56,6 @@ class MainActivity : ComponentActivity() {
                 .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                 .build()
 
-            // 2. Daily Forecasts (IMPORTANCE_DEFAULT)
             val dailyChannel = NotificationChannel(
                 WeatherNotificationManager.CHANNEL_DAILY,
                 "Daily Forecasts",
@@ -65,7 +65,6 @@ class MainActivity : ComponentActivity() {
                 setSound(soundUri, audioAttributes)
             }
 
-            // 3. Rain Alerts (IMPORTANCE_HIGH)
             val rainChannel = NotificationChannel(
                 WeatherNotificationManager.CHANNEL_RAIN,
                 "Rain Alerts",
@@ -76,7 +75,6 @@ class MainActivity : ComponentActivity() {
                 enableVibration(true)
             }
 
-            // 4. Weather Alerts (IMPORTANCE_HIGH)
             val weatherAlertsChannel = NotificationChannel(
                 WeatherNotificationManager.CHANNEL_WEATHER_ALERTS,
                 "Weather Alerts",
@@ -87,7 +85,6 @@ class MainActivity : ComponentActivity() {
                 enableVibration(true)
             }
 
-            // 5. Air Quality Alerts (IMPORTANCE_HIGH)
             val aqiChannel = NotificationChannel(
                 WeatherNotificationManager.CHANNEL_AQI,
                 "Air Quality Alerts",
@@ -98,7 +95,6 @@ class MainActivity : ComponentActivity() {
                 enableVibration(true)
             }
 
-            // Register all channels with the OS
             notificationManager.createNotificationChannels(
                 listOf(dailyChannel, rainChannel, weatherAlertsChannel, aqiChannel)
             )
@@ -126,7 +122,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         createNotificationChannels()
-        scheduleWeatherNotificationWorker() // ← was defined but never called before
+        scheduleWeatherNotificationWorker()
 
         setContent {
             val weatherViewModel: WeatherViewModel = hiltViewModel()
@@ -137,7 +133,7 @@ class MainActivity : ComponentActivity() {
             val isOnboardingComplete by weatherViewModel.isOnboardingComplete.collectAsStateWithLifecycle(initialValue = false)
 
 
-            WeatherTheme(darkTheme = settingsState.isDarkTheme) {
+            WeatherAppTheme(darkTheme = settingsState.isDarkTheme) {
 
                 val navController = rememberNavController()
 
@@ -171,22 +167,21 @@ class MainActivity : ComponentActivity() {
                             weatherViewModel = weatherViewModel
                         )
                     }
-                    composable("settings_route") {
-                        SettingsScreen(
-                            navController = navController,
-                            onBackClick = { navController.popBackStack() }
-                        )
-                    }
+
                     composable("onboarding_route") {
                         OnboardingScreen(navController = navController)
                     }
                     composable("manage_locations") {
+                        val manageLocationsHazeState = remember { HazeState() }
                         ManageLocationsScreen(
                             navController = navController,
-                            onSearchClick = { navController.navigate("search_route") }
+                            onSearchClick = { navController.navigate("search_route") },
+                            onBackClick = { navController.popBackStack() },
+                            hazeState = manageLocationsHazeState
                         )
                     }
                     composable("search_route") {
+                        val searchHazeState = remember { HazeState() }
                         SearchScreen(
                             navController = navController,
                             onLocationSelected = { lat, lon, cityName ->
@@ -198,7 +193,8 @@ class MainActivity : ComponentActivity() {
                                         set("cityName", cityName)
                                     }
                                 navController.popBackStack()
-                            }
+                            },
+                            hazeState = searchHazeState
                         )
                     }
                 }

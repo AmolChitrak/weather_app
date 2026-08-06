@@ -10,16 +10,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Air
 import androidx.compose.material.icons.outlined.Compress
 import androidx.compose.material.icons.outlined.DarkMode
@@ -39,9 +40,7 @@ import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -51,7 +50,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -64,34 +63,77 @@ import com.jenil.weather.ui.core.SettingsGroupTitle
 import com.jenil.weather.ui.core.SettingsRowDivider
 import com.jenil.weather.ui.core.SettingsToggleRow
 import com.jenil.weather.ui.core.UnitSegmentedRow
+import com.jenil.weather.ui.theme.WeatherTheme
+import com.jenil.weather.ui.theme.glassBackdrop
+import dev.chrisbanes.haze.rememberHazeState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     navController: NavController,
-    onBackClick: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var showClearCacheDialog by remember { mutableStateOf(false) }
+    val hazeState = rememberHazeState()
+    val isDark = WeatherTheme.colors.isDark
+
+    val atmosphericGradient = if (isDark) {
+        Brush.verticalGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                MaterialTheme.colorScheme.surface.copy(alpha = 0.05f),
+                MaterialTheme.colorScheme.background
+            )
+        )
+    } else {
+        Brush.verticalGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                MaterialTheme.colorScheme.background
+            )
+        )
+    }
 
     if (showClearCacheDialog) {
         AlertDialog(
             onDismissRequest = { showClearCacheDialog = false },
-            icon = { Icon(Icons.Outlined.DeleteOutline, contentDescription = null) },
-            title = { Text("Clear cached data?") },
-            text = { Text("Removes offline forecast data. Your saved locations and settings stay untouched.") },
+            icon = {
+                Icon(
+                    Icons.Outlined.DeleteOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = {
+                Text(
+                    "Clear cached data?",
+                    style = WeatherTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            text = {
+                Text(
+                    "Removes offline forecast data. Your saved locations and settings stay untouched.",
+                    style = WeatherTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.clearCachedData()
                     showClearCacheDialog = false
                 }) {
-                    Text("Clear", color = MaterialTheme.colorScheme.error)
+                    Text("Clear", style = WeatherTheme.typography.labelLarge, color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showClearCacheDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showClearCacheDialog = false }) {
+                    Text("Cancel", style = WeatherTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                }
             }
         )
     }
@@ -100,40 +142,37 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.35f))
+            .glassBackdrop(hazeState)
     ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            containerColor = Color.Transparent,
-            topBar = {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
-                    }
-                    Text(
-                        text = "Settings",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+        Column(modifier = Modifier.fillMaxSize()) {
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+
+                Text(
+                    text = "Settings",
+                    style = WeatherTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
-        ) { innerPadding ->
+
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp)
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                contentPadding = PaddingValues(top = 8.dp, bottom = 120.dp)
             ) {
                 item { SettingsGroupTitle(title = "Units") }
                 item {
-                    SettingsGroupCard {
+                    SettingsGroupCard(hazeState) {
                         UnitSegmentedRow(
                             icon = Icons.Outlined.Thermostat,
                             title = "Temperature",
@@ -165,15 +204,14 @@ fun SettingsScreen(
                             selectedIndex = uiState.pressureUnit.ordinal,
                             onSelect = { viewModel.updatePressureUnit(PressureUnit.entries[it]) }
                         )
-
                     }
                 }
 
-                item { Spacer(Modifier.height(28.dp)) }
+                item { Spacer(Modifier.height(24.dp)) }
 
                 item { SettingsGroupTitle(title = "Notifications") }
                 item {
-                    SettingsGroupCard {
+                    SettingsGroupCard(hazeState) {
                         SettingsToggleRow(
                             icon = Icons.Outlined.Notifications,
                             title = "Enable notifications",
@@ -188,7 +226,7 @@ fun SettingsScreen(
 
                 item { SettingsGroupTitle(title = "Daily briefs") }
                 item {
-                    SettingsGroupCard {
+                    SettingsGroupCard(hazeState) {
                         SettingsToggleRow(
                             icon = Icons.Outlined.WbSunny,
                             title = "Morning brief",
@@ -213,7 +251,7 @@ fun SettingsScreen(
 
                 item { SettingsGroupTitle(title = "Weather alerts") }
                 item {
-                    SettingsGroupCard {
+                    SettingsGroupCard(hazeState) {
                         SettingsToggleRow(
                             icon = Icons.Outlined.WaterDrop,
                             title = "Rain",
@@ -239,7 +277,9 @@ fun SettingsScreen(
                                         else -> 1
                                     },
                                     onSelect = { index ->
-                                        val minutes = when (index) { 0 -> 15; 2 -> 45; else -> 30 }
+                                        val minutes = when (index) {
+                                            0 -> 15; 2 -> 45; else -> 30
+                                        }
                                         viewModel.updateRainLeadTime(minutes)
                                     }
                                 )
@@ -279,7 +319,7 @@ fun SettingsScreen(
 
                 item { SettingsGroupTitle(title = "Smart tips") }
                 item {
-                    SettingsGroupCard {
+                    SettingsGroupCard(hazeState) {
                         SettingsToggleRow(
                             icon = Icons.Outlined.TipsAndUpdates,
                             title = "Recommendations",
@@ -291,11 +331,11 @@ fun SettingsScreen(
                     }
                 }
 
-                item { Spacer(Modifier.height(28.dp)) }
+                item { Spacer(Modifier.height(24.dp)) }
 
                 item { SettingsGroupTitle(title = "Location") }
                 item {
-                    SettingsGroupCard {
+                    SettingsGroupCard(hazeState) {
                         SettingsToggleRow(
                             icon = Icons.Outlined.MyLocation,
                             title = "Use current location",
@@ -312,11 +352,12 @@ fun SettingsScreen(
                         )
                     }
                 }
-                item { Spacer(Modifier.height(28.dp)) }
+
+                item { Spacer(Modifier.height(24.dp)) }
 
                 item { SettingsGroupTitle(title = "Appearance") }
                 item {
-                    SettingsGroupCard {
+                    SettingsGroupCard(hazeState) {
                         SettingsToggleRow(
                             icon = if (uiState.isDarkTheme) Icons.Outlined.DarkMode else Icons.Outlined.LightMode,
                             title = "Dark theme",
@@ -326,11 +367,12 @@ fun SettingsScreen(
                         )
                     }
                 }
-                item { Spacer(Modifier.height(28.dp)) }
+
+                item { Spacer(Modifier.height(24.dp)) }
 
                 item { SettingsGroupTitle(title = "About") }
                 item {
-                    SettingsGroupCard {
+                    SettingsGroupCard(hazeState) {
                         SettingsClickableRow(
                             icon = Icons.Outlined.Info,
                             title = "Version",
@@ -359,12 +401,13 @@ fun SettingsScreen(
                     ) {
                         Text(
                             text = "Weatherly",
-                            style = MaterialTheme.typography.labelMedium,
+                            style = WeatherTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Spacer(Modifier.height(4.dp))
                         Text(
                             text = "Skies, simplified.",
-                            style = MaterialTheme.typography.labelSmall,
+                            style = WeatherTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                     }

@@ -2,51 +2,63 @@ package com.jenil.weather.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// --- Light theme ---
-val LightPrimary = Color(0xFF0066FF)
-val LightOnPrimary = Color(0xFFFFFFFF)
-val LightPrimaryContainer = Color(0xFFE0ECFF)
-val LightOnPrimaryContainer = Color(0xFF001D66)
+// ---------------------------------------------------------------------------
+// DARK MODE — matches the original mockups (near-black bg, floating gray cards)
+// ---------------------------------------------------------------------------
+val DarkBackground = Color(0xFF101215)
+val DarkSurfaceCard = Color(0xFF1B1E22)      // hero card, forecast row bg
+val DarkSurfaceElevated = Color(0xFF24272C)  // nested tiles (stat tiles, chips)
+val DarkSurfaceElevatedHigh = Color(0xFF2E323A) // pressed/selected nav pill, popovers
 
-val LightSecondary = Color(0xFF4C5D73)
-val LightOnSecondary = Color(0xFFFFFFFF)
-val LightSecondaryContainer = Color(0xFFD8E3F8)
-val LightOnSecondaryContainer = Color(0xFF081A2C)
+val DarkOnBackground = Color(0xFFF5F6F7)
+val DarkOnSurface = Color(0xFFF5F6F7)
+val DarkOnSurfaceMuted = Color(0xFF8A8F98)   // labels like "WIND", "HUMIDITY"
+val DarkOnSurfaceFaint = Color(0xFF5A5F66)   // graph axis labels, disabled
 
-val LightBackground = Color(0xFFF0F4FA)
-val LightOnBackground = Color(0xFF0F172A)
-val LightSurface = Color(0xFFFFFFFF)
-val LightOnSurface = Color(0xFF0F172A)
-val LightSurfaceVariant = Color(0xFFE2E8F0)
-val LightOnSurfaceVariant = Color(0xFF475569)
-val LightOutline = Color(0xFF94A3B8)
-val LightOutlineVariant = Color(0xFFCBD5E1)
+val DarkDivider = Color(0xFF2A2D32)
+val DarkNavSelectedBg = Color(0xFFFFFFFF)
+val DarkNavSelectedIcon = Color(0xFF101215)
+val DarkNavUnselectedIcon = Color(0xFF8A8F98)
 
-val LightInverseSurface = Color(0xFF1E293B)
-val LightInverseOnSurface = Color(0xFFF1F5F9)
-val LightInversePrimary = Color(0xFF93C5FD)
+// ---------------------------------------------------------------------------
+// LIGHT MODE — same structure, depth via shadow/border instead of brightness
+// ---------------------------------------------------------------------------
+val LightBackground = Color(0xFFF3F4F6)
+val LightSurfaceCard = Color(0xFFFFFFFF)
+val LightSurfaceElevated = Color(0xFFF7F8FA)   // nested tiles sit one step off white
+val LightSurfaceElevatedHigh = Color(0xFFEDEEF1)
+
+val LightOnBackground = Color(0xFF14161A)
+val LightOnSurface = Color(0xFF14161A)
+val LightOnSurfaceMuted = Color(0xFF6B7076)
+val LightOnSurfaceFaint = Color(0xFFA6ABB2)
+
+val LightDivider = Color(0xFFE7E8EB)
+val LightNavSelectedBg = Color(0xFF14161A)
+val LightNavSelectedIcon = Color(0xFFFFFFFF)
+val LightNavUnselectedIcon = Color(0xFF9498A0)
+
+// ---------------------------------------------------------------------------
+// BRAND / DATA-VIZ ACCENTS — identical in both modes (they carry meaning,
+// e.g. the pressure gradient, so they shouldn't shift with theme)
+// ---------------------------------------------------------------------------
+val AccentSun = Color(0xFFFFC24B)
+val AccentSky = Color(0xFF4FC3F7)
+val AccentRain = Color(0xFF5B8DEF)
+val AccentBadgeRed = Color(0xFFE6395A)     // "Health Risk" badge
+val AccentBadgeGreen = Color(0xFF3ECF8E)   // low-risk / good AQI state
 
 
-// --- Dark theme ---
-val DarkPrimary = Color(0xFF38BDF8)       // Electric Sky Cyan
-val DarkOnPrimary = Color(0xFF003554)
-val DarkPrimaryContainer = Color(0xFF004D7A)
-val DarkOnPrimaryContainer = Color(0xFFCBEBFD)
+val GradientPressureTop = Color(0xFF8B5CF6)    // purple (high)
+val GradientPressureMid = Color(0xFF4FC3F7)    // blue
+val GradientPressureBottom = Color(0xFF3ECF8E) // green (low)
 
-val DarkSecondary = Color(0xFF94A3B8)
-val DarkOnSecondary = Color(0xFF0F172A)
-val DarkSecondaryContainer = Color(0xFF1E293B)
-val DarkOnSecondaryContainer = Color(0xFFE2E8F0)
+val GraphLineColor = Color(0xFFF5F6F7)
+val GraphLineColorLight = Color(0xFF14161A)
+val GraphHighlightDot = Color(0xFF4FC3F7)
 
-val DarkBackground = Color(0xFF0B1120)      // Deep Cosmic Obsidian
-val DarkOnBackground = Color(0xFFF8FAFC)
-val DarkSurface = Color(0xFF1E293B)         // Sleek Slate Glass Surface
-val DarkOnSurface = Color(0xFFF8FAFC)
-val DarkSurfaceVariant = Color(0xFF334155)
-val DarkOnSurfaceVariant = Color(0xFF94A3B8)
-val DarkOutline = Color(0xFF64748B)
-val DarkOutlineVariant = Color(0xFF334155)
+val DarkCardBorder = Color(0xFFFFFFFF).copy(alpha = 0.08f)
+val LightCardBorder = Color(0xFF14161A).copy(alpha = 0.05f)
 
-val DarkInverseSurface = Color(0xFFF1F5F9)
-val DarkInverseOnSurface = Color(0xFF0F172A)
-val DarkInversePrimary = Color(0xFF0284C7)
+val DarkNavContainerBg = Color(0xFF1B1E22).copy(alpha = 0.85f)
+val LightNavContainerBg = Color(0xFFFFFFFF).copy(alpha = 0.85f)

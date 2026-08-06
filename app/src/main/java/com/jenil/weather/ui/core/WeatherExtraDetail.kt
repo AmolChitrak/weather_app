@@ -1,36 +1,34 @@
 package com.jenil.weather.ui.core
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Air
-import androidx.compose.material.icons.outlined.Compress
-import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.LightMode
-import androidx.compose.material.icons.outlined.NightsStay
-import androidx.compose.material.icons.outlined.Thermostat
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.WaterDrop
-import androidx.compose.material.icons.outlined.WbTwilight
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.jenil.weather.R
 import com.jenil.weather.domain.model.WeatherData
 import com.jenil.weather.ui.settings.PressureUnit
-import com.jenil.weather.utils.Sunrise
-import com.jenil.weather.utils.Sunset
+import com.jenil.weather.ui.theme.WeatherTheme
 import com.jenil.weather.utils.getAqiColor
 import com.jenil.weather.utils.getAqiColorScale
 import com.jenil.weather.utils.getAqiDescription
 import com.jenil.weather.utils.getAqiProgress
+import com.jenil.weather.utils.getDewPointDescription
 import com.jenil.weather.utils.getFeelsLikeDescription
 import com.jenil.weather.utils.getPressureDescription
 import com.jenil.weather.utils.getUvColor
@@ -39,6 +37,7 @@ import com.jenil.weather.utils.getUvDescription
 import com.jenil.weather.utils.getUvProgress
 import com.jenil.weather.utils.getVisibilityDescription
 import com.jenil.weather.utils.getWindDirectionString
+import dev.chrisbanes.haze.HazeState
 import kotlin.math.roundToInt
 
 @Composable
@@ -46,28 +45,18 @@ fun WeatherExtraDetailsGrid(
     weatherData: WeatherData,
     isCelsius: Boolean,
     isKmh: Boolean,
-    isPrecipitationMm: Boolean,
     pressureUnit: PressureUnit,
+    hazeState: HazeState,
     modifier: Modifier = Modifier
 ) {
-
     val currentUv = weatherData.hourlyForecast.firstOrNull()?.uvIndex ?: 0.0
     val uvDescription = getUvDescription(currentUv)
     val aqiDescription = getAqiDescription(weatherData.aqi)
 
-    val rainfallSum = weatherData.dailyForecast.firstOrNull()?.precipitationSum ?: 0.0
-    val displayRainfall = if (isPrecipitationMm) {
-        "%.1f mm".format(rainfallSum)
-    } else {
-        "%.2f in".format(rainfallSum * 0.0393701)
-    }
-
     val isCurrentlyDay = weatherData.hourlyForecast.firstOrNull()?.isDay ?: true
 
     val sunEventTitle = if (isCurrentlyDay) "SUNSET" else "SUNRISE"
-    val sunEventIcon = if (isCurrentlyDay) Sunset else Sunrise
     val sunEventTime = if (isCurrentlyDay) weatherData.sunset else weatherData.sunrise
-    val sunEventSubtitle = if (isCurrentlyDay) "Sunrise: ${weatherData.sunrise}" else "Sunset: ${weatherData.sunset}"
 
     val displayApparentTemp = if (isCelsius) {
         weatherData.apparentTemperature
@@ -85,54 +74,56 @@ fun WeatherExtraDetailsGrid(
 
     val displayPressure = when (pressureUnit) {
         PressureUnit.HPA -> "${weatherData.pressure.toInt()} hPa"
-        PressureUnit.MBAR -> "${weatherData.pressure.toInt()} mbar" // 1 hPa = 1 mbar
+        PressureUnit.MBAR -> "${weatherData.pressure.toInt()} mbar"
         PressureUnit.INHG -> "%.2f inHg".format(weatherData.pressure * 0.02953)
     }
-
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 20.dp, vertical = 8.dp)
     ) {
         Text(
-            text = "Weather Insights",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
-            modifier = Modifier.padding(bottom = 10.dp)
+            text = "WEATHER INSIGHTS",
+            style = WeatherTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.5.sp,
+            color = WeatherTheme.colors.onSurfaceMuted,
+            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
         )
 
         // Grid Row 1: Sun Event & Wind Direction
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
-            WeatherDetailCard(
+            SunTimeCard(
                 title = sunEventTitle,
-                icon = sunEventIcon,
-                value = sunEventTime,
-                subtitle = sunEventSubtitle,
+                iconRes = if (isCurrentlyDay) R.drawable.ic_sunset else R.drawable.ic_sunrise,
+                time = sunEventTime,
+                hazeState = hazeState,
                 modifier = Modifier.weight(1f)
             )
 
             WindCompassCard(
                 windDirectionDegree = weatherData.windDirection,
                 windDirectionString = getWindDirectionString(weatherData.windDirection),
+                hazeState = hazeState,
                 modifier = Modifier.weight(1f)
             )
-
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Grid Row 2: AQI & UV Index
+        // Grid Row 2: Air Quality & UV Index
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
             WeatherDetailCard(
                 title = "AIR QUALITY",
                 icon = Icons.Outlined.Air,
@@ -141,6 +132,7 @@ fun WeatherExtraDetailsGrid(
                 accentColor = getAqiColor(weatherData.aqi),
                 progress = getAqiProgress(weatherData.aqi),
                 progressTrackColors = getAqiColorScale(),
+                hazeState = hazeState,
                 modifier = Modifier.weight(1f)
             )
 
@@ -152,59 +144,115 @@ fun WeatherExtraDetailsGrid(
                 accentColor = getUvColor(currentUv),
                 progress = getUvProgress(currentUv),
                 progressTrackColors = getUvColorScale(),
+                hazeState = hazeState,
                 modifier = Modifier.weight(1f)
             )
-
-
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+        // Grid Row 3: Dew Point & Moon Phase
 
-        // Grid Row 3: Pressure & Rainfall
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
-            WeatherDetailCard(
-                title = "RAINFALL",
-                icon = Icons.Outlined.WaterDrop,
-                value = displayRainfall,
-                subtitle = if (rainfallSum > 0.0) "Expected today" else "No precipitation",
+            GenericWeatherCard(
+                title = "DEW POINT",
+                graphicContent = {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_dew_point),
+                        contentDescription = "Dew Point",
+                        modifier = Modifier.size(64.dp)
+                    )
+                },
+                value = "${weatherData.dewPoint}°",
+                subtitle = getDewPointDescription(weatherData.dewPoint),
+                hazeState = hazeState,
                 modifier = Modifier.weight(1f)
             )
 
-            WeatherDetailCard(
-                title = "PRESSURE",
-                icon = Icons.Outlined.Compress,
-                value = displayPressure,
-                subtitle = getPressureDescription(weatherData.pressure),
+            GenericWeatherCard(
+                title = "MOON PHASE",
+                graphicContent = {
+                    MoonPhaseIcon(
+                        modifier = Modifier.size(64.dp),
+                        phase = weatherData.moonPhase
+                    )
+                },
+                value = weatherData.moonPhase.title,
+                subtitle = weatherData.moonPhase.description,
+                hazeState = hazeState,
                 modifier = Modifier.weight(1f)
             )
-
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Row 4: Feels Like & Visibility
+        // Grid Row 4: Feels Like & Visibility
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            WeatherDetailCard(
+            GenericWeatherCard(
                 title = "FEELS LIKE",
-                icon = Icons.Outlined.Thermostat,
+                graphicContent = {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_temprature),
+                        contentDescription = "temp",
+                        modifier = Modifier.size(64.dp)
+                    )
+                },
                 value = "${displayApparentTemp}°",
                 subtitle = feelsLikeDescription,
+                hazeState = hazeState,
                 modifier = Modifier.weight(1f)
             )
-            WeatherDetailCard(
+
+            GenericWeatherCard(
                 title = "VISIBILITY",
-                icon = Icons.Outlined.Visibility,
+                graphicContent = {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_visibility),
+                        contentDescription = "Visibility",
+                        modifier = Modifier.size(64.dp)
+                    )
+                },
                 value = "%.1f $visibilityUnit".format(displayVisibility),
                 subtitle = visibilityDescription,
+                hazeState = hazeState,
                 modifier = Modifier.weight(1f)
             )
         }
+
+
+        Spacer(modifier = Modifier.height(12.dp))
+        // Grid Row 5: Pressure
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            GenericWeatherCard(
+                title = "PRESSURE",
+                graphicContent = {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_pressure),
+                        contentDescription = "Pressure",
+                        modifier = Modifier.size(64.dp)
+                    )
+                },
+                value = displayPressure,
+                subtitle = getPressureDescription(weatherData.pressure),
+                hazeState = hazeState,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
+
     }
 }

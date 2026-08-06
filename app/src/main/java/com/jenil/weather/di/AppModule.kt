@@ -8,22 +8,28 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.jenil.weather.BuildConfig
 import com.jenil.weather.data.local.WeatherDatabase
 import com.jenil.weather.data.local.dao.CachedWeatherDao
 import com.jenil.weather.data.local.dao.FavoriteLocationDao
+import com.jenil.weather.data.remote.RadarMapApi
 import com.jenil.weather.data.remote.WeatherApi
 import com.jenil.weather.data.repository.DefaultLocationTracker
+import com.jenil.weather.data.repository.RadarRepositoryImpl
 import com.jenil.weather.data.repository.WeatherRepositoryImpl
 import com.jenil.weather.domain.location.LocationTracker
+import com.jenil.weather.domain.repository.RadarRepository
 import com.jenil.weather.domain.repository.WeatherRepository
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -52,6 +58,16 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideRainViewerApi(json: Json): RadarMapApi {
+        val contentType = "application/json".toMediaType()
+        return Retrofit.Builder()
+            .baseUrl("https://api.rainviewer.com/")
+            .addConverterFactory(json.asConverterFactory(contentType))
+            .build()
+            .create(RadarMapApi::class.java)
+    }
+    @Provides
+    @Singleton
     fun provideCachedWeatherDao(db: WeatherDatabase): CachedWeatherDao {
         return db.cachedWeatherDao
     }
@@ -65,6 +81,14 @@ object AppModule {
         json: Json
     ): WeatherRepository {
         return WeatherRepositoryImpl(api, favoriteDao, cachedDao, json)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRadarRepository(
+        api: RadarMapApi
+    ): RadarRepository {
+        return RadarRepositoryImpl(api)
     }
 
     @Provides
@@ -103,6 +127,20 @@ object AppModule {
     @Singleton
     fun provideDataStore(app: Application): DataStore<Preferences> {
         return app.dataStore
+    }
+
+
+    @Provides
+    @Singleton
+    @Named("open_weather_api_key")
+    fun provideOpenWeatherApiKey(): String {
+        return BuildConfig.MAPS_WIND_API_KEY
+    }
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface WeatherWidgetEntryPoint {
+        fun weatherRepository(): WeatherRepository
     }
 
 }

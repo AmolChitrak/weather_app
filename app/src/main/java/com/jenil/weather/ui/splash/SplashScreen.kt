@@ -52,7 +52,6 @@ import com.jenil.weather.ui.weather.WeatherViewModel
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
-// Palette sampled from the app icon
 private val SkyTop = Color(0xFF4FB3F7)
 private val SkyBottom = Color(0xFF1665C4)
 private val SunCore = Color(0xFFFFC94A)
@@ -70,10 +69,8 @@ fun SplashScreen(
     var minDurationElapsed by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        // 1. Fetch data immediately while the animation plays
         viewModel.fetchWeatherForCurrentLocation()
 
-        // 2. Allow the animation to play for a minimum of 1.2 seconds
         delay(1200.milliseconds)
         minDurationElapsed = true
     }
@@ -83,7 +80,6 @@ fun SplashScreen(
         if (dataResolved && minDurationElapsed) onReady()
     }
 
-    // Fallback safety timer
     LaunchedEffect(Unit) {
         delay(6000.milliseconds)
         onReady()
@@ -91,7 +87,6 @@ fun SplashScreen(
 
     val infiniteTransition = rememberInfiniteTransition(label = "splash")
 
-    // Gentle breathing glow
     val sunGlowPulse by infiniteTransition.animateFloat(
         initialValue = 0.85f,
         targetValue = 1f,
@@ -99,7 +94,6 @@ fun SplashScreen(
         label = "sun_glow"
     )
 
-    // Continuous smooth rotation for the sun rays
     val sunRotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
@@ -107,7 +101,6 @@ fun SplashScreen(
         label = "sun_rotation"
     )
 
-    // Sleek rain streak animation
     val rainProgress by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
@@ -115,7 +108,6 @@ fun SplashScreen(
         label = "rain_progress"
     )
 
-    // Gentle floating effect for the cloud
     val cloudHover by infiniteTransition.animateFloat(
         initialValue = -4f,
         targetValue = 4f,
@@ -123,7 +115,6 @@ fun SplashScreen(
         label = "cloud_hover"
     )
 
-    // One-shot entrance
     val entrance = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
         entrance.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow))
@@ -135,7 +126,6 @@ fun SplashScreen(
         titleReveal.animateTo(1f, tween(600, easing = FastOutSlowInEasing))
     }
 
-    // Progress-line sweep
     val progressSweep by infiniteTransition.animateFloat(
         initialValue = -0.1f, // Tightened from -0.4f
         targetValue = 1.1f,   // Tightened from 1.4f
@@ -156,7 +146,6 @@ fun SplashScreen(
             .background(Brush.verticalGradient(listOf(Color.Transparent, SkyBottom.copy(alpha = 0.35f)))),
         contentAlignment = Alignment.Center
     ) {
-        // 1. The Glyph
         Box(
             modifier = Modifier
                 .size(160.dp)
@@ -170,11 +159,10 @@ fun SplashScreen(
             )
         }
 
-        // 2. The Text & Progress Indicator Group
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .offset(y = 130.dp) // Pushed lower to align as a single block
+                .offset(y = 130.dp)
                 .graphicsAlpha(titleReveal.value)
         ) {
             Text(
@@ -193,7 +181,6 @@ fun SplashScreen(
                 letterSpacing = 0.4.sp
             )
 
-            // Progress Line is now perfectly centered under the text
             Spacer(Modifier.height(32.dp))
             ProgressLine(sweep = progressSweep)
         }
@@ -212,7 +199,6 @@ private fun SunCloudRainGlyph(
         val sunCenter = Offset(size.width * 0.68f, size.height * 0.35f)
         val sunRadius = size.minDimension / 5.2f
 
-        // Draw Rotating Sun Rays
         rotate(degrees = sunRotation, pivot = sunCenter) {
             repeat(8) { i ->
                 rotate(degrees = i * 45f, pivot = sunCenter) {
@@ -230,7 +216,6 @@ private fun SunCloudRainGlyph(
             }
         }
 
-        // Soft ambient glow behind the sun
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(SunGlow.copy(alpha = 0.4f * glowPulse), Color.Transparent),
@@ -241,7 +226,6 @@ private fun SunCloudRainGlyph(
             center = sunCenter
         )
 
-        // Sun core
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(SunGlow, SunCore),

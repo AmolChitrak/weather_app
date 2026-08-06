@@ -8,12 +8,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -24,16 +22,16 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,10 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -53,83 +48,65 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.jenil.weather.ui.theme.WeatherTheme
+import com.jenil.weather.ui.theme.glassCard
+import dev.chrisbanes.haze.HazeState
 
 @Composable
 fun SettingsGroupTitle(title: String) {
     Text(
-        text = title,
-        style = MaterialTheme.typography.titleSmall,
+        text = title.uppercase(),
+        style = WeatherTheme.typography.labelMedium,
+        fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary,
-        fontWeight = FontWeight.SemiBold,
-        letterSpacing = 0.4.sp,
-        modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
+        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
     )
 }
+
 @Composable
-fun SettingsGroupCard(content: @Composable ColumnScope.() -> Unit) {
-    Column(
+fun SettingsGroupCard(
+    hazeState: HazeState,
+    content: @Composable () -> Unit
+) {
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
+            .glassCard(hazeState, shape = RoundedCornerShape(24.dp))
             .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
-                        MaterialTheme.colorScheme.surface.copy(alpha = 0.1f)
-                    )
-                )
-            )
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(24.dp)
+                color = WeatherTheme.colors.surfaceCard,
             )
     ) {
         Column(
-            modifier = Modifier.padding(vertical = 4.dp),
-            content = content
-        )
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 6.dp)
+        ) {
+            content()
+        }
     }
 }
 
 @Composable
 fun SettingsRowDivider() {
     HorizontalDivider(
-        modifier = Modifier.padding(start = 68.dp),
-        thickness = 1.dp,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+        modifier = Modifier.padding(horizontal = 16.dp),
+        thickness = 0.5.dp,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
     )
-}
-
-@Composable
-fun SettingsIconChip(icon: ImageVector) {
-    Box(
-        modifier = Modifier
-            .size(36.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-            modifier = Modifier.size(18.dp)
-        )
-    }
 }
 
 @Composable
 fun SettingsToggleRow(
     icon: ImageVector,
     title: String,
-    subtitle: String,
+    subtitle: String? = null,
     isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    onCheckedChange: (Boolean) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -140,44 +117,123 @@ fun SettingsToggleRow(
                 onValueChange = onCheckedChange,
                 role = Role.Switch
             )
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-            .then(if (!enabled) Modifier.alpha(0.4f) else Modifier),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        SettingsIconChip(icon)
-        Spacer(Modifier.width(14.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (enabled) 0.5f else 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column {
+                Text(
+                    text = title,
+                    style = WeatherTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                )
+                if (!subtitle.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = subtitle,
+                        style = WeatherTheme.typography.bodySmall,
+                        color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                    )
+                }
+            }
         }
-        Switch(checked = isChecked, onCheckedChange = null, enabled = enabled) // ← enabled added
+
+        Switch(
+            checked = isChecked,
+            onCheckedChange = onCheckedChange,
+            enabled = enabled,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        )
     }
 }
+
 @Composable
 fun SettingsClickableRow(
     icon: ImageVector,
     title: String,
-    subtitle: String,
-    onClick: () -> Unit,
-    titleColor: Color = MaterialTheme.colorScheme.onSurface
+    subtitle: String? = null,
+    titleColor: Color = MaterialTheme.colorScheme.onSurface,
+    onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick, role = Role.Button)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        SettingsIconChip(icon)
-        Spacer(Modifier.width(14.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge, color = titleColor)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = titleColor,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column {
+                Text(
+                    text = title,
+                    style = WeatherTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = titleColor
+                )
+                if (!subtitle.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = subtitle,
+                        style = WeatherTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
+
         Icon(
-            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-            contentDescription = "Open",
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            imageVector = Icons.Outlined.ChevronRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            modifier = Modifier.size(20.dp)
         )
     }
 }
@@ -191,39 +247,75 @@ fun UnitSegmentedRow(
     onSelect: (Int) -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
+
+    // Was `val` (dead state — never flipped, so every transition animated,
+    // including the very first composition). Needs to be `var` for the
+    // snap-then-spring behavior below to do anything.
     var userInteracted by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-
-        SettingsIconChip(icon = icon)
-        Spacer(Modifier.width(14.dp))
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-
-        Spacer(Modifier.width(12.dp))
-
-        BoxWithConstraints(
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .weight(1.3f)
-                .height(36.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.20f))
-                .selectableGroup()
+                .weight(1f)
+                .padding(end = 8.dp)
         ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Text(
+                text = title,
+                style = WeatherTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
 
-            val segmentWidth = maxWidth / options.size
+        // Sliding capsule selector: a single pill translates between segments
+        // (animateDpAsState + spring) instead of each option independently
+        // cross-fading its own background.
+        //
+        // BUG FIX: this used to be a BoxWithConstraints with no width modifier.
+        // In a Row, unweighted children are measured *before* weighted ones —
+        // so the unconstrained BoxWithConstraints claimed nearly the entire
+        // row for itself (its inner Row used fillMaxSize, forcing it to grab
+        // all the width Row was willing to offer), leaving the weight(1f)
+        // label next to no space at all and wrapping it one letter per line.
+        // Fixing it means giving the control a fixed, bounded width instead
+        // of letting it self-expand — a plain Box with an explicit width
+        // does that; BoxWithConstraints/maxWidth is no longer needed since
+        // segment width is now a fixed constant rather than derived from
+        // available space.
+        val segmentWidth = 66.dp
+        val controlWidth = segmentWidth * options.size
 
-
+        Box(
+            modifier = Modifier
+                .width(controlWidth)
+                .height(36.dp)
+                .clip(RoundedCornerShape(50.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f))
+        ) {
             val offsetAnimationSpec: AnimationSpec<Dp> = if (userInteracted) {
                 spring(
                     dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -245,37 +337,29 @@ fun UnitSegmentedRow(
                     .width(segmentWidth)
                     .fillMaxHeight()
                     .padding(2.dp)
-                    .shadow(
-                        elevation = 4.dp,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(MaterialTheme.colorScheme.primary)
             )
 
-            Row(
-                modifier = Modifier.fillMaxSize()
-            ) {
-
-                options.forEachIndexed { index, label ->
-
+            Row(modifier = Modifier.fillMaxSize()) {
+                options.forEachIndexed { index, option ->
                     val selected = index == selectedIndex
 
                     val textColor by animateColorAsState(
-                        targetValue =
-                            if (selected)
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant,
-                        label = "textColor"
+                        targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        label = "pill_text"
                     )
 
                     val scale by animateFloatAsState(
                         targetValue = if (selected) 1f else 0.94f,
-                        animationSpec = if (userInteracted) spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessMedium
-                        ) else snap(),
+                        animationSpec = if (userInteracted) {
+                            spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessMedium
+                            )
+                        } else {
+                            snap()
+                        },
                         label = "scale"
                     )
 
@@ -283,13 +367,10 @@ fun UnitSegmentedRow(
                         modifier = Modifier
                             .width(segmentWidth)
                             .fillMaxHeight()
-                            .clip(RoundedCornerShape(10.dp))
+                            .clip(RoundedCornerShape(50.dp))
                             .clickable {
                                 if (!selected) {
-                                    haptic.performHapticFeedback(
-                                        HapticFeedbackType.TextHandleMove
-                                    )
-                                    // 3. Mark that the user has interacted, enabling smooth animations from now on
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     userInteracted = true
                                     onSelect(index)
                                 }
@@ -297,10 +378,10 @@ fun UnitSegmentedRow(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = label,
+                            text = option,
                             color = textColor,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                            style = WeatherTheme.typography.labelMedium,
                             modifier = Modifier.graphicsLayer {
                                 scaleX = scale
                                 scaleY = scale

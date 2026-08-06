@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Weatherly</string>
+    <string name="forecast_widget_description">Forecast</string>
 </resources>

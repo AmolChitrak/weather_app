@@ -32,7 +32,9 @@ data class CurrentWeatherDto(
     @SerialName("surface_pressure")
     val surfacePressure: Double,
     @SerialName("visibility")
-    val visibility: Double // in meters
+    val visibility: Double,
+    @SerialName("dew_point_2m")
+    val dewPoint2m: Double? = null
 )
 
 @Serializable
@@ -55,7 +57,9 @@ data class HourlyWeatherDto(
     @SerialName("wind_direction_10m")
     val windDirections: List<Int>,
     @SerialName("uv_index")
-    val uvIndices: List<Double>
+    val uvIndices: List<Double>,
+    @SerialName("dew_point_2m")
+    val dewPoint2m: List<Double>? = null
 )
 
 @Serializable
@@ -72,7 +76,9 @@ data class DailyWeatherDto(
     @SerialName("uv_index_max")
     val maxUvIndices: List<Double>,
     @SerialName("precipitation_sum")
-    val precipitationSums: List<Double>
+    val precipitationSums: List<Double>,
+    @SerialName("moon_phase")
+    val moonPhase: List<Double>? = null
 )
 
 @Serializable

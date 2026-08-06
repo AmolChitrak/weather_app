@@ -1,3 +1,12 @@
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -22,12 +31,16 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders["MAPS_WIND_API_KEY"] = localProperties.getProperty("MAPS_WIND_API_KEY", "")
+
+        buildConfigField("String", "MAPS_WIND_API_KEY", "\"${localProperties.getProperty("MAPS_WIND_API_KEY", "")}\"")
     }
 
     buildTypes {
         release {
             optimization {
-                enable = false
+                enable = true
             }
         }
     }
@@ -37,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -64,7 +78,6 @@ dependencies {
 
     // Splash
     implementation(libs.androidx.core.splashscreen)
-
 
     // Icon
     implementation(libs.androidx.compose.material.icons.extended)
@@ -98,4 +111,19 @@ dependencies {
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
+
+    //Radr Maps
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.maps)
+
+    // Haze
+    implementation(libs.haze)
+    implementation(libs.haze.materials)
+
+    //MapLibre
+    implementation(libs.maplibre.compose.android)
+
+    //Widgets
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
 }

@@ -4,6 +4,7 @@ import com.jenil.weather.data.local.entity.FavoriteLocationEntity
 import com.jenil.weather.domain.model.DailyForecast
 import com.jenil.weather.domain.model.HourlyForecast
 import com.jenil.weather.domain.model.LocationSearchResult
+import com.jenil.weather.domain.model.MoonPhase
 import com.jenil.weather.domain.model.WeatherCondition
 import com.jenil.weather.domain.model.WeatherData
 import java.time.LocalDateTime
@@ -113,6 +114,7 @@ fun WeatherDto.toWeatherData(cityName: String, airQualityDto: AirQualityDto?): W
         HourlyForecast(
             time = if (parsedTime == currentHour) "Now" else formattedTime,
             temperature = hourly.temperatures[index].toInt(),
+            dewPoint = hourly.dewPoint2m?.getOrNull(index)?.toInt() ?: 0,
             condition = hourly.weatherCodes[index].toWeatherCondition(),
             precipitationProbability = hourly.precipitationProbabilities.getOrElse(index) { 0 },
             uvIndex = hourly.uvIndices.getOrElse(index) { 0.0 },
@@ -144,7 +146,8 @@ fun WeatherDto.toWeatherData(cityName: String, airQualityDto: AirQualityDto?): W
             lowTemp = daily.minTemperatures[index].toInt(),
             condition = daily.weatherCodes[index].toWeatherCondition(),
             uvIndexMax = daily.maxUvIndices.getOrElse(index) { 0.0 },
-            precipitationSum = daily.precipitationSums.getOrElse(index) { 0.0 }
+            precipitationSum = daily.precipitationSums.getOrElse(index) { 0.0 },
+            moonPhase = MoonPhase.fromValue(daily.moonPhase?.getOrNull(index) ?: 0.0)
         )
     }
 
@@ -157,6 +160,7 @@ fun WeatherDto.toWeatherData(cityName: String, airQualityDto: AirQualityDto?): W
         highTemp = daily.maxTemperatures[0].toInt(),
         lowTemp = daily.minTemperatures[0].toInt(),
         humidity = current.humidity,
+        dewPoint = current.dewPoint2m?.toInt() ?: 0,
         windSpeed = current.windSpeed,
         windDirection = current.windDirection,
         pressure = current.surfacePressure,
@@ -167,6 +171,7 @@ fun WeatherDto.toWeatherData(cityName: String, airQualityDto: AirQualityDto?): W
         sunset = sunsetFormatted,
         sunriseSecondsOfDay = sunriseParsed?.toLocalTime()?.toSecondOfDay() ?: 0,
         sunsetSecondsOfDay = sunsetParsed?.toLocalTime()?.toSecondOfDay() ?: 0,
+        moonPhase = MoonPhase.fromValue(daily.moonPhase?.firstOrNull() ?: 0.0),
         dailyForecast = dailyForecasts
     )
 }

@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Android Studio Artifacts
+.artifacts/
+.artifacts/58c7c03a-55a2-43ed-b5ba-e3bc4b2b41d0
+.artifacts/9b5868ab-4d50-4c90-9b81-b33a7de00c49
+.artifacts/d805fd66-7d42-4e38-8545-0f4e0f954353
+.artifacts/f2cc49e3-d5d3-4886-bf25-d751bd9e9a09

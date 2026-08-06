@@ -1,124 +1,152 @@
 package com.jenil.weather.ui.core
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cloud
+import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Place
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.jenil.weather.ui.theme.WeatherExtraShapes
+import com.jenil.weather.ui.theme.WeatherTheme
+import com.jenil.weather.ui.theme.glassCard
+import dev.chrisbanes.haze.HazeState
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Weather : Screen("weather_tab", "Weather", Icons.Outlined.Cloud)
     object Locations : Screen("locations_tab", "Locations", Icons.Outlined.Place)
+    object Map : Screen("map_tab", "Map", Icons.Outlined.Map)
+    object Settings : Screen("settings_route", "Settings", Icons.Outlined.Settings)
 }
 
 @Composable
 fun WeatherBottomBar(
     currentRoute: String,
     onTabSelected: (Screen) -> Unit,
+    hazeState: HazeState,
     modifier: Modifier = Modifier
 ) {
-    val items = listOf(Screen.Weather, Screen.Locations)
+    val items = listOf(Screen.Weather, Screen.Locations, Screen.Map, Screen.Settings)
+    val selectedIndex = items.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
+
+    val haptic = LocalHapticFeedback.current
+
+    var userInteracted by remember { mutableStateOf(false) }
+
+    val barHeight = 64.dp
+    val circleSize = 48.dp
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 32.dp, vertical = 16.dp),
+            .padding(start = 32.dp, end = 32.dp, top = 16.dp, bottom = 4.dp),
         contentAlignment = Alignment.Center
     ) {
-        Row(
+        BoxWithConstraints(
             modifier = Modifier
-                .shadow(elevation = 12.dp, shape = CircleShape)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.inverseSurface)
-                .padding(horizontal = 8.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .shadow(elevation = 12.dp, shape = WeatherExtraShapes.navBar)
+                .clip(WeatherExtraShapes.navBar)
+                .glassCard(hazeState, shape = WeatherExtraShapes.navBar)
+                .background(color = WeatherTheme.colors.surfaceCard)
+                .height(barHeight)
         ) {
-            items.forEach { screen ->
-                val selected = currentRoute == screen.route
+            val segmentWidth = maxWidth / items.size
 
-                val backgroundColor by animateColorAsState(
-                    targetValue = if (selected) {
-                        MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.15f)
-                    } else {
-                        MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0f)
-                    },
-                    label = "background_color"
+            val offsetAnimationSpec: AnimationSpec<Dp> = if (userInteracted) {
+                spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
                 )
-                val contentColor by animateColorAsState(
-                    targetValue = if (selected) {
-                        MaterialTheme.colorScheme.inversePrimary
-                    } else {
-                        MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.7f)
-                    },
-                    label = "content_color"
-                )
-                val scale by animateFloatAsState(
-                    targetValue = if (selected) 1f else 0.96f,
-                    animationSpec = tween(200, easing = FastOutSlowInEasing),
-                    label = "tab_scale"
-                )
+            } else {
+                snap()
+            }
 
-                Row(
+            val animatedOffset by animateDpAsState(
+                targetValue = segmentWidth * selectedIndex,
+                animationSpec = offsetAnimationSpec,
+                label = "navIndicatorOffset"
+            )
+
+            Box(
+                modifier = Modifier
+                    .offset(x = animatedOffset)
+                    .width(segmentWidth)
+                    .fillMaxHeight(),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
                     modifier = Modifier
-                        .scale(scale)
+                        .size(circleSize)
                         .clip(CircleShape)
-                        .background(backgroundColor)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { onTabSelected(screen) }
-                        .padding(horizontal = 18.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = screen.icon,
-                        contentDescription = screen.title,
-                        tint = contentColor,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    AnimatedVisibility(
-                        visible = selected,
-                        enter = fadeIn(tween(200)) + expandHorizontally(tween(200)),
-                        exit = fadeOut(tween(150)) + shrinkHorizontally(tween(150))
+                        .background(MaterialTheme.colorScheme.inverseSurface)
+                )
+            }
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                items.forEach { screen ->
+                    val selected = screen.route == currentRoute
+
+                    Box(
+                        modifier = Modifier
+                            .width(segmentWidth)
+                            .fillMaxHeight()
+                            .clip(CircleShape)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                if (!selected) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    userInteracted = true
+                                    onTabSelected(screen)
+                                }
+                            },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = screen.title,
-                            style = MaterialTheme.typography.labelLarge,
-                            color = contentColor
+                        Icon(
+                            imageVector = screen.icon,
+                            contentDescription = screen.title,
+                            tint = if (selected) {
+                                MaterialTheme.colorScheme.inverseOnSurface
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }

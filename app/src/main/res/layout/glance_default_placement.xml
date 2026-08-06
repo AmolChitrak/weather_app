@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/glance_preview_background"
+    android:padding="12dp">
+
+    <!-- Simple loading placeholder branding -->
+    <TextView
+        android:id="@+id/brand_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Weatherly"
+        android:textColor="#8A000000"
+        android:textSize="12sp"
+        android:textStyle="normal"
+        tools:ignore="HardcodedText" />
+
+</RelativeLayout>

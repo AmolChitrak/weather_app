@@ -1,4 +1,0 @@
-- [x] Update `libs.versions.toml` with Hilt and KSP
-- [x] Update root `build.gradle.kts`
-- [x] Update app `build.gradle.kts`
-- [/] Verify Gradle Sync and Build

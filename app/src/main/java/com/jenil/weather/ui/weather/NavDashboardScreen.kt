@@ -19,9 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.jenil.weather.ui.core.Screen
 import com.jenil.weather.ui.core.WeatherBottomBar
+import com.jenil.weather.ui.map.WeatherMapScreen
 import com.jenil.weather.ui.search.SearchScreen
+import com.jenil.weather.ui.settings.SettingsScreen
+import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.time.delay
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
@@ -30,7 +32,7 @@ fun MainDashboardScreen(
     weatherViewModel: WeatherViewModel
 ) {
     var selectedTabRoute by remember { mutableStateOf(Screen.Weather.route) }
-
+    val bottomBarHazeState = remember { HazeState() }
 
     LaunchedEffect(Unit) {
         weatherViewModel.fetchWeatherForCurrentLocation()
@@ -76,12 +78,24 @@ fun MainDashboardScreen(
             }
 
             Screen.Locations.route -> {
+                val searchHazeState = remember { HazeState() }
                 SearchScreen(
                     navController = navController,
                     onLocationSelected = { lat, lon, cityName ->
                         weatherViewModel.loadWeatherData(lat, lon, cityName)
                         selectedTabRoute = Screen.Weather.route
-                    }
+                    },
+                    hazeState = searchHazeState
+                )
+            }
+            Screen.Map.route -> {
+                WeatherMapScreen(
+                    navController = navController,
+                )
+            }
+            Screen.Settings.route -> {
+                SettingsScreen(
+                    navController = navController,
                 )
             }
         }
@@ -90,9 +104,11 @@ fun MainDashboardScreen(
             onTabSelected = { screen ->
                 selectedTabRoute = screen.route
             },
+            hazeState = bottomBarHazeState,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 24.dp)
+                .padding(bottom = 24.dp),
+
         )
     }
 }

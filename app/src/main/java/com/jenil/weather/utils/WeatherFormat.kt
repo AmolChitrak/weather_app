@@ -124,3 +124,12 @@ fun formatPressure(hpa: Double, unit: PressureUnit): String {
         }
     }
 }
+
+fun getDewPointDescription(dewPointCelsius: Int): String {
+    return when {
+        dewPointCelsius < 10 -> "Very dry air"
+        dewPointCelsius <= 15 -> "Comfortable"
+        dewPointCelsius <= 20 -> "Humid"
+        else -> "Very muggy"
+    }
+}

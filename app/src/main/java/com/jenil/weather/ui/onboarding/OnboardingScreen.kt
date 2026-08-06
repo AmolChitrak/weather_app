@@ -155,7 +155,6 @@ private fun PagerScreen(onBoardingPage: OnboardingPageData) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Icon placeholder — swap for custom Lottie/Canvas art later if desired.
         Box(
             modifier = Modifier
                 .size(160.dp)
@@ -202,8 +201,6 @@ private fun OnboardingBottomBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            // Without this, the buttons/dots could sit under a gesture nav
-            // bar on edge-to-edge devices.
             .navigationBarsPadding()
             .padding(horizontal = 24.dp, vertical = 32.dp),
         horizontalArrangement = Arrangement.SpaceBetween,

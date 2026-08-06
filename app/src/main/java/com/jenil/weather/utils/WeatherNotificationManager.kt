@@ -34,10 +34,8 @@ class WeatherNotificationManager @Inject constructor(
         const val CHANNEL_AQI = "aqi_alerts_v1"
     }
 
-    //Notification Icon
     private val appIconBitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_weather_icon_round)
 
-    // Intent for the notification
     private fun contentIntent(requestCode: Int): PendingIntent {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
