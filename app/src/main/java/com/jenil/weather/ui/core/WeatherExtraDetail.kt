@@ -24,6 +24,7 @@ import com.jenil.weather.R
 import com.jenil.weather.domain.model.WeatherData
 import com.jenil.weather.ui.settings.PressureUnit
 import com.jenil.weather.ui.theme.WeatherTheme
+import com.jenil.weather.utils.MoonPhaseIcon
 import com.jenil.weather.utils.getAqiColor
 import com.jenil.weather.utils.getAqiColorScale
 import com.jenil.weather.utils.getAqiDescription

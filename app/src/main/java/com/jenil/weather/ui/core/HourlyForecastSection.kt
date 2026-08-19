@@ -30,6 +30,7 @@ import com.jenil.weather.ui.theme.WeatherTheme
 import com.jenil.weather.ui.theme.glassCard
 import com.jenil.weather.utils.Sunrise
 import com.jenil.weather.utils.Sunset
+import com.jenil.weather.utils.WeatherConditionIcon
 import dev.chrisbanes.haze.HazeState
 import kotlin.math.roundToInt
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jenil.weather.data.local.PreferenceKeys
 import com.jenil.weather.domain.location.LocationTracker
+import com.jenil.weather.domain.repository.LifeStyleIndexRepository
 import com.jenil.weather.domain.repository.WeatherRepository
 import com.jenil.weather.ui.settings.PressureUnit
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +26,8 @@ import javax.inject.Inject
 class WeatherViewModel @Inject constructor(
     private val repository: WeatherRepository,
     private val locationTracker: LocationTracker,
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
+    private val lifeStyleIndexRepository: LifeStyleIndexRepository
 ) : ViewModel() {
 
     val isOnboardingComplete = dataStore.data.map { preferences ->
@@ -87,7 +89,7 @@ class WeatherViewModel @Inject constructor(
         currentCity = cityName
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null, isOffline = false) }
+            _uiState.update { it.copy(isLoading = true, isAiLoading = true, error = null, isOffline = false) }
 
             repository.getWeatherData(lat = lat, lon = lon, cityName = cityName)
                 .onSuccess { weatherData ->
@@ -100,6 +102,15 @@ class WeatherViewModel @Inject constructor(
                             isOffline = false
                         )
                     }
+
+                    val indexes = lifeStyleIndexRepository.getLifeStyleIndices(weatherData)
+                    _uiState.update { 
+                        it.copy(
+                            lifestyleIndexes = indexes,
+                            isAiLoading = false 
+                        )
+                    }
+                    
                     updateOfflineCacheInBackground()
                 }
                 .onFailure { exception ->
@@ -132,13 +143,24 @@ class WeatherViewModel @Inject constructor(
             val cachedData = repository.getCachedWeather()
 
             if (cachedData != null) {
+                // 1. Show cached weather immediately
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         isRefreshing = false,
                         data = cachedData,
                         isOffline = true,
-                        error = null
+                        isAiLoading = true,
+                        error = null,
+                    )
+                }
+                
+                // 2. Load/Verify AI indexes (might be cached in DataStore already)
+                val indexes = lifeStyleIndexRepository.getLifeStyleIndices(cachedData)
+                _uiState.update {
+                    it.copy(
+                        lifestyleIndexes = indexes,
+                        isAiLoading = false
                     )
                 }
             } else {

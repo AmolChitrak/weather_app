@@ -4,15 +4,15 @@ A modern, highly-polished Android weather application built with Jetpack Compose
 
 ## 🌟 Features
 
-- **Dynamic Dashboard**: Real-time weather data with beautiful 3D-styled icons.
-- **Detailed Forecasts**: Hourly and 7-day weather predictions with temperature range visualizations.
-- **Glassmorphic UI**: Powered by [Haze](https://github.com/chrisbanes/haze) for a modern, frosted glass aesthetic that adapts to light and dark themes.
-- **Interactive Maps**: Precipitation radar and wind speed maps using MapLibre and Google Maps.
-- **Location Management**: Search for cities worldwide, manage favorite locations, and auto-detect current location.
-- **Smart Settings**: Customizable units (Celsius/Fahrenheit, km/h / mph), notification preferences, and manual theme switching.
-- **Home Screen Widgets**: Glance-based widgets for quick weather updates at a glance.
-- **Offline Support**: Caching mechanism to display the last known weather data when offline.
-- **Worker Notifications**: Periodic background updates and smart alerts for rain and air quality.
+- **Dynamic Dashboard**: Real-time weather data with beautiful 3D-styled icons and 24h/7-day forecasts.
+- **AI Lifestyle Insights**: Hyper-personalized daily advice for Skincare, Driving, Clothing, and Outdoor Activities, powered by **Gemini 3.1 Flash-Lite**.
+- **Immersive Maps**: Truly edge-to-edge interactive maps for precipitation radar and wind streamlines with theme-aware styling (Liberty/Dark-Matter).
+- **Commute Weather**: Route-based weather forecasting using OSRM routing to show conditions at various points along your journey.
+- **Glassmorphic UI**: High-fidelity design powered by [Haze](https://github.com/chrisbanes/haze) for a modern, frosted glass aesthetic.
+- **Smart Notifications**: Periodic briefs and urgent alerts (Rain, AQI, High Winds, Extreme Temp) that fully respect user unit preferences (°C/°F), also powered by **Gemini 3.1 Flash-Lite**.
+- **Location Management**: Global city search, favorites management with Room persistence, and real-time GPS tracking.
+- **Home Screen Widgets**: Material 3 styled widgets built with **Jetpack Glance** for instant updates.
+- **Offline First**: Robust caching mechanism and DataStore-backed settings for a reliable experience without connectivity.
 
 ## 🛠 Tech Stack
 
@@ -49,15 +49,19 @@ This project uses several services to provide weather data and interactive maps:
    - This key is used in `local.properties` for the `MAPS_WIND_API_KEY` field.
 
 2. **MapLibre & OpenFreeMap**: Used for the core map engine and base styles. No API key required.
-3. **Open-Meteo**: Powering current, hourly, and 7-day weather forecasts. No API key required for non-commercial use.
-4. **RainViewer**: Providing precipitation radar data. No API key required.
+3. **Google Gemini**: Powering the AI Lifestyle Insights and conversational notification briefs.
+   - Get an API Key from [Google AI Studio](https://aistudio.google.com/).
+   - This key is used in `local.properties` for the `GEMINI_API_KEY` field.
+4. **Open-Meteo**: Powering current, hourly, and 7-day weather forecasts.
+5. **RainViewer**: Providing precipitation radar data.
 
 ### Installation
 1. Clone the repository.
 2. Create a `local.properties` file in the root directory.
-3. Add your OpenWeatherMap API key:
+3. Add your API keys:
    ```properties
    MAPS_WIND_API_KEY=your_openweathermap_api_key
+   GEMINI_API_KEY=your_gemini_api_key
    ```
 4. Sync the project with Gradle.
 5. Run the app on an emulator or physical device.

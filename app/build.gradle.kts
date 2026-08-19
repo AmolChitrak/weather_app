@@ -33,8 +33,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         manifestPlaceholders["MAPS_WIND_API_KEY"] = localProperties.getProperty("MAPS_WIND_API_KEY", "")
+        manifestPlaceholders["GEMINI_API_KEY"] = localProperties.getProperty("GEMINI_API_KEY", "")
 
         buildConfigField("String", "MAPS_WIND_API_KEY", "\"${localProperties.getProperty("MAPS_WIND_API_KEY", "")}\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\"")
     }
 
     buildTypes {
@@ -126,4 +128,7 @@ dependencies {
     //Widgets
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
+
+    // Google Generative AI SDK
+    implementation(libs.generativeai)
 }

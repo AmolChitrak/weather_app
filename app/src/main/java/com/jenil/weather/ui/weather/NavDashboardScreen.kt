@@ -20,6 +20,7 @@ import androidx.navigation.NavController
 import com.jenil.weather.ui.core.Screen
 import com.jenil.weather.ui.core.WeatherBottomBar
 import com.jenil.weather.ui.map.WeatherMapScreen
+import com.jenil.weather.ui.route.RouteWeatherScreen
 import com.jenil.weather.ui.search.SearchScreen
 import com.jenil.weather.ui.settings.SettingsScreen
 import dev.chrisbanes.haze.HazeState
@@ -31,6 +32,7 @@ fun MainDashboardScreen(
     navController: NavController,
     weatherViewModel: WeatherViewModel
 ) {
+    var showRouteWeather by remember { mutableStateOf(false) }
     var selectedTabRoute by remember { mutableStateOf(Screen.Weather.route) }
     val bottomBarHazeState = remember { HazeState() }
 
@@ -69,6 +71,11 @@ fun MainDashboardScreen(
             .fillMaxSize()
 
     ) {
+        if (showRouteWeather) {
+            RouteWeatherScreen(
+                onBackClick = { showRouteWeather = false }
+            )
+        }
         when (selectedTabRoute) {
             Screen.Weather.route -> {
                 WeatherScreen(

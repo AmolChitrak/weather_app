@@ -40,7 +40,7 @@ import com.jenil.weather.data.remote.dto.toDisplayName
 import com.jenil.weather.di.AppModule
 import com.jenil.weather.domain.model.HourlyForecast
 import com.jenil.weather.domain.model.WeatherData
-import com.jenil.weather.ui.core.widgetWeatherIcon
+import com.jenil.weather.utils.widgetWeatherIcon
 import com.jenil.weather.ui.theme.DarkColors
 import com.jenil.weather.ui.theme.LightColors
 import com.jenil.weather.utils.cardSurfaceColor

@@ -21,6 +21,12 @@ object PreferenceKeys {
     // ONBOARDING KEY
     val HAS_COMPLETED_ONBOARDING = booleanPreferencesKey("has_completed_onboarding")
 
+    // AI CACHING KEYS
+    val AI_LAST_FETCHED = longPreferencesKey("ai_last_fetched")
+    val AI_CACHED_JSON = stringPreferencesKey("ai_cached_json")
+    val AI_CACHED_CITY = stringPreferencesKey("ai_cached_city")
+    val AI_PROMPT_VERSION = intPreferencesKey("ai_prompt_version")
+
     // LOCATION CACHING KEYS
     val OFFLINE_LAT = doublePreferencesKey("offline_lat")
     val OFFLINE_LON = doublePreferencesKey("offline_lon")
@@ -41,7 +47,6 @@ object PreferenceKeys {
     val LAST_EVENING_BRIEF_DATE = stringPreferencesKey("last_evening_brief_date")
     val LAST_WIND_ALERT_DATE = stringPreferencesKey("last_wind_alert_date")
     val LAST_TEMPERATURE_ALERT_DATE = stringPreferencesKey("last_temperature_alert_date")
-
     val SMART_RECOMMENDATIONS_ENABLED = booleanPreferencesKey("smart_recommendations_enabled")
     val LAST_RECOMMENDATION_KEY = stringPreferencesKey("last_recommendation_key")
 }

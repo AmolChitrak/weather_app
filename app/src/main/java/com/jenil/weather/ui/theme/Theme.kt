@@ -11,7 +11,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
@@ -40,7 +39,10 @@ data class WeatherExtendedColors(
     val gradientPressureMid: Color,
     val gradientPressureBottom: Color,
     val graphLine: Color,
-    val graphHighlightDot: Color
+    val graphHighlightDot: Color,
+    val mapBlue: Color,
+    val mapRed: Color,
+    val mapAmber: Color
 )
 
 private val DarkExtendedColors = WeatherExtendedColors(
@@ -67,7 +69,10 @@ private val DarkExtendedColors = WeatherExtendedColors(
     gradientPressureMid = GradientPressureMid,
     gradientPressureBottom = GradientPressureBottom,
     graphLine = GraphLineColor,
-    graphHighlightDot = GraphHighlightDot
+    graphHighlightDot = GraphHighlightDot,
+    mapBlue = MapsBlue,
+    mapRed = MapsRed,
+    mapAmber = MapsAmber
 )
 
 private val LightExtendedColors = WeatherExtendedColors(
@@ -94,7 +99,10 @@ private val LightExtendedColors = WeatherExtendedColors(
     gradientPressureMid = GradientPressureMid,
     gradientPressureBottom = GradientPressureBottom,
     graphLine = GraphLineColorLight,
-    graphHighlightDot = GraphHighlightDot
+    graphHighlightDot = GraphHighlightDot,
+    mapBlue = MapsBlue,
+    mapRed = MapsRed,
+    mapAmber = MapsAmber
 )
  val DarkColors = darkColorScheme(
     primary = DarkOnSurface,
@@ -135,7 +143,7 @@ fun WeatherAppTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
+            // Removed forcing statusBarColor to background to allow edge-to-edge
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
                     !darkTheme

@@ -48,13 +48,13 @@ class WeatherNotificationManager @Inject constructor(
         )
     }
 
-    fun showMorningBrief(title: String, message: String) {
+    fun showMorningBrief(title: String, summaryText: String, fullMessage: String) {
         val notification = NotificationCompat.Builder(context, CHANNEL_DAILY)
             .setSmallIcon(R.drawable.ic_weather_sun)
             .setLargeIcon(appIconBitmap)
             .setContentTitle(title)
-            .setContentText(message)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            .setContentText(summaryText)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(fullMessage))
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
@@ -63,13 +63,13 @@ class WeatherNotificationManager @Inject constructor(
         notificationManager.notify(MORNING_BRIEF_ID, notification)
     }
 
-    fun showEveningBrief(title: String, message: String) {
+    fun showEveningBrief(title: String, summaryText: String, fullMessage: String) {
         val notification = NotificationCompat.Builder(context, CHANNEL_DAILY)
             .setSmallIcon(R.drawable.ic_weather_night)
             .setLargeIcon(appIconBitmap)
             .setContentTitle(title)
-            .setContentText(message)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            .setContentText(summaryText) // Collapsed 1-line glance
+            .setStyle(NotificationCompat.BigTextStyle().bigText(fullMessage))
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)

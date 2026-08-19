@@ -62,6 +62,7 @@ import com.jenil.weather.ui.core.CurrentWeatherHeader
 import com.jenil.weather.ui.core.DailyForecastSection
 import com.jenil.weather.ui.core.HomeTopBar
 import com.jenil.weather.ui.core.HourlyForecastSection
+import com.jenil.weather.ui.core.LifestyleSection
 import com.jenil.weather.ui.core.RefreshIndicator
 import com.jenil.weather.ui.core.WeatherExtraDetailsGrid
 import com.jenil.weather.ui.core.WeatherMetricsGrid
@@ -270,7 +271,8 @@ fun WeatherScreen(
                                     }
                                     HomeTopBar(
                                         cityName = current.cityName,
-                                        modifier = Modifier.padding(horizontal = 20.dp)
+                                        modifier = Modifier.padding(horizontal = 20.dp),
+                                        onLocationClick = {navController.navigate("routing_screen")}
                                     )
 
                                     Spacer(modifier = Modifier.height(20.dp))
@@ -288,6 +290,15 @@ fun WeatherScreen(
                                         isKmh = isKmh,
                                         hazeState = hazeState,
                                         isPrecipitationMm = isPrecipitationMm
+                                    )
+
+                                    Spacer(modifier = Modifier.height(20.dp))
+
+                                    LifestyleSection(
+                                        indices = uiState.lifestyleIndexes,
+                                        isInitialLoading = uiState.isAiLoading && uiState.lifestyleIndexes.isEmpty(),
+                                        isRefreshing = uiState.isAiLoading && uiState.lifestyleIndexes.isNotEmpty(),
+                                        hazeState = hazeState
                                     )
 
                                     Spacer(modifier = Modifier.height(20.dp))

@@ -36,6 +36,7 @@ import com.jenil.weather.ui.weather.MainDashboardScreen
 import com.jenil.weather.ui.weather.WeatherViewModel
 import com.jenil.weather.utils.WeatherNotificationManager
 import com.jenil.weather.data.worker.WeatherWorker
+import com.jenil.weather.ui.route.RouteWeatherScreen
 import com.jenil.weather.ui.theme.WeatherAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.haze.HazeState
@@ -195,6 +196,11 @@ class MainActivity : ComponentActivity() {
                                 navController.popBackStack()
                             },
                             hazeState = searchHazeState
+                        )
+                    }
+                    composable("routing_screen") {
+                        RouteWeatherScreen(
+                            onBackClick = { navController.popBackStack() }
                         )
                     }
                 }

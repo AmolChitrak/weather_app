@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.jenil.weather.domain.model.DailyForecast
 import com.jenil.weather.ui.theme.WeatherTheme
 import com.jenil.weather.ui.theme.glassCard
+import com.jenil.weather.utils.WeatherConditionIcon
 import dev.chrisbanes.haze.HazeState
 import kotlin.math.roundToInt
 

@@ -36,16 +36,17 @@ import com.jenil.weather.data.remote.dto.toDisplayName
 import com.jenil.weather.domain.model.WeatherData
 import com.jenil.weather.ui.theme.WeatherTheme
 import com.jenil.weather.ui.theme.glassCard
+import com.jenil.weather.utils.WeatherConditionIcon
 import dev.chrisbanes.haze.HazeState
 import kotlin.math.roundToInt
 
 
 @Composable
 fun HomeTopBar(
+    modifier: Modifier = Modifier,
     cityName: String,
     onLocationClick: () -> Unit = {},
     onMenuClick: () -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier

@@ -2,7 +2,6 @@ package com.jenil.weather.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,7 +19,6 @@ import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
-import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -37,12 +35,11 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
 import com.jenil.weather.MainActivity
 import com.jenil.weather.data.remote.dto.toDisplayName
 import com.jenil.weather.di.AppModule
 import com.jenil.weather.domain.model.WeatherData
-import com.jenil.weather.ui.core.widgetWeatherIcon
+import com.jenil.weather.utils.widgetWeatherIcon
 import com.jenil.weather.ui.theme.DarkColors
 import com.jenil.weather.ui.theme.LightColors
 import com.jenil.weather.utils.cardSurfaceColor

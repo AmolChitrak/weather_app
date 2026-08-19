@@ -104,7 +104,7 @@ fun WeatherMapScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: WeatherMapViewModel = hiltViewModel(),
-    bottomNavClearance: Dp = 88.dp,
+    bottomNavClearance: Dp = 120.dp,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -172,9 +172,7 @@ fun WeatherMapScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .background(MaterialTheme.colorScheme.background)
+            .background(Color.Transparent)
     ) {
         MaplibreMap(
             modifier = Modifier.fillMaxSize(),
@@ -298,7 +296,7 @@ fun WeatherMapScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
                             MaterialTheme.colorScheme.surface.copy(alpha = 0f)
                         )
                     )
@@ -310,15 +308,8 @@ fun WeatherMapScreen(
                     .statusBarsPadding()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.End
             ) {
-                Text(
-                    text = "Weather Map",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
                 MapLayerSelector(
                     selectedLayer = uiState.selectedLayer,
                     onLayerSelected = viewModel::selectLayer

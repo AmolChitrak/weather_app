@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
+import com.google.ai.client.generativeai.GenerativeModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.jenil.weather.BuildConfig
@@ -13,12 +14,17 @@ import com.jenil.weather.data.local.WeatherDatabase
 import com.jenil.weather.data.local.dao.CachedWeatherDao
 import com.jenil.weather.data.local.dao.FavoriteLocationDao
 import com.jenil.weather.data.remote.RadarMapApi
+import com.jenil.weather.data.remote.RoutingApi
 import com.jenil.weather.data.remote.WeatherApi
 import com.jenil.weather.data.repository.DefaultLocationTracker
+import com.jenil.weather.data.repository.LifeStyleIndexRepositoryImpl
 import com.jenil.weather.data.repository.RadarRepositoryImpl
+import com.jenil.weather.data.repository.RouteRepositoryImpl
 import com.jenil.weather.data.repository.WeatherRepositoryImpl
 import com.jenil.weather.domain.location.LocationTracker
+import com.jenil.weather.domain.repository.LifeStyleIndexRepository
 import com.jenil.weather.domain.repository.RadarRepository
+import com.jenil.weather.domain.repository.RouteRepository
 import com.jenil.weather.domain.repository.WeatherRepository
 import dagger.Module
 import dagger.Provides
@@ -43,6 +49,12 @@ object AppModule {
     fun provideJson(): Json = Json {
         ignoreUnknownKeys = true
         coerceInputValues = true
+    }
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface WeatherWidgetEntryPoint {
+        fun weatherRepository(): WeatherRepository
     }
 
     @Provides
@@ -90,7 +102,6 @@ object AppModule {
     ): RadarRepository {
         return RadarRepositoryImpl(api)
     }
-
     @Provides
     @Singleton
     fun provideFusedLocationProviderClient(app: Application): FusedLocationProviderClient {
@@ -137,10 +148,35 @@ object AppModule {
         return BuildConfig.MAPS_WIND_API_KEY
     }
 
-    @EntryPoint
-    @InstallIn(SingletonComponent::class)
-    interface WeatherWidgetEntryPoint {
-        fun weatherRepository(): WeatherRepository
+    @Provides
+    @Singleton
+    fun provideRoutingApi(json: Json): RoutingApi {
+        val contentType = "application/json".toMediaType()
+        return Retrofit.Builder()
+            .baseUrl("https://router.project-osrm.org/")
+            .addConverterFactory(json.asConverterFactory(contentType))
+            .build()
+            .create(RoutingApi::class.java)
     }
 
+    @Provides
+    @Singleton
+    fun provideRouteRepository(
+        routingApi: RoutingApi,
+        json: Json
+    ): RouteRepository {
+        return RouteRepositoryImpl(routingApi, json)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLifeStyleIndexRepository(
+        generativeModel: GenerativeModel,
+        dataStore: DataStore<Preferences>
+    ): LifeStyleIndexRepository {
+        return LifeStyleIndexRepositoryImpl(
+            generativeModel = generativeModel,
+            dataStore = dataStore
+        )
+    }
 }
